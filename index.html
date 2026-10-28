@@ -1,0 +1,1457 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ICT Killzones &amp; HTF Candle — KlineCharts Conversion</title>
+  <meta name="description" content="Pine Script v6 ICT Killzones & HTF Candle converted to a KlineCharts v10 custom indicator. Inputs schema, JavaScript factory, and a live canvas preview.">
+  <meta name="theme-color" content="#070b11">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23f6b73c'/%3E%3Cpath d='M18 44V20h8v24h-8zm12 0V28h8v16h-8zm12 0V14h8v30h-8z' fill='%2310141b'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="#top" aria-label="ICT Lab home">
+        <span class="brand-mark">IC</span>
+        <span class="brand-copy">
+          <strong>ICT Lab</strong>
+          <span>Pine → KlineCharts</span>
+        </span>
+      </a>
+      <nav class="topnav" aria-label="Sections">
+        <a href="#preview">Preview</a>
+        <a href="#compatibility">Compatibility</a>
+        <a href="#source">Source</a>
+      </nav>
+      <span class="status-pill"><span class="status-dot"></span>Conversion ready</span>
+    </div>
+  </header>
+
+  <main id="top">
+    <div class="wrap">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="reveal">
+          <div class="eyebrow"><i></i>Pine Script v6 → KlineCharts v10</div>
+          <h1 id="hero-title">ICT Killzones &amp;<br><span class="accent">HTF Candle</span></h1>
+          <p class="lede">
+            A faithful port of <strong>tradeforopp's</strong> Pine toolkit into a single
+            KlineCharts custom indicator: five killzone boxes, session pivots, DWM levels,
+            eight opening prices, vertical time markers, and six higher-timeframe candle
+            panels — with every source default preserved.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#source">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 6l-6 6 6 6M16 6l6 6-6 6"/></svg>
+              Get the conversion
+            </a>
+            <button class="btn btn-ghost" id="download-hero" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/></svg>
+              Download script
+            </button>
+          </div>
+          <ul class="hero-chips">
+            <li><b>Overlay</b> on main chart</li>
+            <li><b id="input-count">—</b> inputs mapped</li>
+            <li><b>6</b> HTF panels</li>
+            <li><b>0</b> blockers</li>
+          </ul>
+        </div>
+
+        <aside class="snapshot reveal d1" aria-label="Conversion snapshot">
+          <div class="snapshot-head">
+            <span>Conversion snapshot</span>
+            <span class="pass-chip">PASS</span>
+          </div>
+          <div class="stat-grid">
+            <div class="stat gold"><b>5</b><span>Killzones</span></div>
+            <div class="stat cyan"><b>6</b><span>HTF panels</span></div>
+            <div class="stat green"><b>100%</b><span>Defaults kept</span></div>
+            <div class="stat purple"><b>0</b><span>Blockers</span></div>
+          </div>
+          <div class="snapshot-meta">
+            <div><span>Source</span><b>indicator() · 1,714 lines</b></div>
+            <div><span>Target</span><b>KlineCharts v10 factory</b></div>
+            <div><span>Precision</span><b>Symbol default</b></div>
+            <div><span>Drawing limits</span><b>500 boxes / lines / labels</b></div>
+          </div>
+        </aside>
+      </section>
+
+      <section class="section" id="preview" aria-labelledby="preview-title">
+        <div class="section-head reveal d1">
+          <div>
+            <p class="section-kicker">Live canvas preview</p>
+            <h2 id="preview-title">The indicator, rendered</h2>
+          </div>
+          <p>Representative 5-minute XAUUSD data with New York session windows, pivot levels, DWM opens, and future-space HTF candle panels.</p>
+        </div>
+
+        <div class="demo reveal d2">
+          <div class="demo-head">
+            <div class="demo-title">
+              <h3><span class="demo-live"></span><span class="sym">XAUUSD</span> ICT Killzones &amp; HTF Candle</h3>
+              <p>5m · America/New_York · overlay</p>
+            </div>
+            <div class="controls" role="group" aria-label="Preview layers">
+              <button class="toggle" type="button" data-toggle="zones" aria-pressed="true">Killzones</button>
+              <button class="toggle" type="button" data-toggle="pivots" aria-pressed="true">Pivots</button>
+              <button class="toggle" type="button" data-toggle="dwm" aria-pressed="true">DWM</button>
+              <button class="toggle" type="button" data-toggle="htf" aria-pressed="true">HTF</button>
+              <button class="toggle" type="button" data-toggle="table" aria-pressed="true">Range</button>
+            </div>
+          </div>
+          <div class="chart-shell">
+            <canvas id="chart" aria-label="Interactive ICT Killzones and HTF candle preview"></canvas>
+          </div>
+          <div class="demo-foot">
+            <div class="legend">
+              <span><i style="--c:#4f7cff"></i>Asia</span>
+              <span><i style="--c:#ff5d73"></i>London</span>
+              <span><i style="--c:#37d67a"></i>NY AM</span>
+              <span><i style="--c:#f6d365"></i>NY Lunch</span>
+              <span><i style="--c:#a78bfa"></i>NY PM</span>
+            </div>
+            <span class="note">Pivots extend until mitigated · countdowns use real time</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="compatibility" aria-labelledby="compat-title">
+        <div class="section-head reveal d1">
+          <div>
+            <p class="section-kicker">Compatibility report</p>
+            <h2 id="compat-title">What survived the port</h2>
+          </div>
+          <p>Every material source behaviour is classified. Nothing is silently dropped.</p>
+        </div>
+
+        <div class="report-grid reveal d2">
+          <article class="report-card" style="--c:#37d67a">
+            <header><span class="dot"></span><h3>Preserved exactly</h3><span class="count">11</span></header>
+            <ul>
+              <li><b>Five killzones</b> with independent session windows, colours, names, and box/text transparency.</li>
+              <li><b>High / low / midpoint pivots</b> with "Until Mitigated" and "Past Mitigation" extension.</li>
+              <li><b>"Most Recent" vs "All"</b> pivot scope, mitigation invalidation, and right-side labels.</li>
+              <li><b>Killzone range table</b> with rolling averages and 9 table positions.</li>
+              <li><b>Day / week / month</b> opens, previous highs and lows, full-height separators.</li>
+              <li><b>Eight opening-price sessions</b> plus four vertical timestamp lines.</li>
+              <li><b>Six HTF candle panels</b> (5m → 1W) with custom daily-open modes.</li>
+              <li><b>FVG and volume-imbalance</b> boxes between HTF candles.</li>
+              <li><b>Trace lines</b> for open, close, high, and low with per-line style and width.</li>
+              <li><b>HTF labels and close countdowns</b> in true HH:MM:SS time.</li>
+              <li><b>Every colour, width, style, toggle, and default</b> mapped 1:1.</li>
+            </ul>
+          </article>
+
+          <article class="report-card" style="--c:#f6b73c">
+            <header><span class="dot"></span><h3>Approximated</h3><span class="count">5</span></header>
+            <ul>
+              <li><b>Alerts</b> are visual only. Broken-pivot and DWM high/low conditions still evaluate; no alert side effects are emitted.</li>
+              <li><b>HTF aggregation</b> rebuilds candles locally from chart bars, with exchange-timezone day, week and month boundaries.</li>
+              <li><b>Day/week/month boundaries</b> use exchange-timezone midnight and Monday starts; venue session opens and holiday calendars are not reproduced.</li>
+              <li><b>Countdown clock</b> is derived from the current HTF bar close instead of <code>timenow</code>.</li>
+              <li><b>Pine tables</b> are painted on the canvas with the same rows, columns, and placement.</li>
+            </ul>
+          </article>
+
+          <article class="report-card" style="--c:#ff5d73">
+            <header><span class="dot"></span><h3>Removed openly</h3><span class="count">5</span></header>
+            <ul>
+              <li><b>alert() and alertcondition()</b> calls; the indicator calculates and draws only.</li>
+              <li><b>Pine drawing-object handles</b> replaced by per-repaint canvas geometry.</li>
+              <li><b>Broker/server time, ticks, Bid/Ask, and spread</b> are unavailable in the sandbox.</li>
+              <li><b>Chart mutation and persistence</b> — no I/O, storage, timers, or network calls.</li>
+              <li><b>500-object hard cap</b> is enforced by the max-days session limit.</li>
+            </ul>
+          </article>
+        </div>
+
+        <div class="report-note reveal d2">
+          <b>No blockers.</b>
+          <span>Placement: <code>Overlay: on</code> (main chart). Precision: <code>symbol default</code>. Output: one Inputs JSON schema and one JavaScript factory function.</span>
+        </div>
+      </section>
+
+      <section class="section" id="source" aria-labelledby="source-title">
+        <div class="section-head reveal d1">
+          <div>
+            <p class="section-kicker">Copy-ready output</p>
+            <h2 id="source-title">Inputs &amp; script</h2>
+          </div>
+          <p>Paste the JSON into the Inputs tab and the factory function into the Script tab.</p>
+        </div>
+
+        <div class="code-card reveal d2">
+          <div class="code-head">
+            <div class="tabs" role="tablist" aria-label="Output files">
+              <button class="tab" type="button" role="tab" id="tab-inputs" aria-selected="true" aria-controls="code-view" data-tab="inputs">Inputs JSON</button>
+              <button class="tab" type="button" role="tab" id="tab-script" aria-selected="false" aria-controls="code-view" data-tab="script">Script JS</button>
+            </div>
+            <span class="file-meta" id="file-meta">inputs.json · 0 bytes</span>
+            <div class="code-actions">
+              <button class="icon-btn" type="button" id="copy-code" aria-label="Copy active code">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>
+                <span id="copy-label">Copy</span>
+              </button>
+              <button class="icon-btn" type="button" id="download-code" aria-label="Download active file">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/></svg>
+                Download
+              </button>
+            </div>
+          </div>
+          <div class="code-body">
+            <pre class="code" id="code-view" role="tabpanel" aria-labelledby="tab-inputs"><code id="code-text"></code></pre>
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <span>Built for The Free Chart · KlineCharts v10 canvas engine</span>
+        <span class="spacer"></span>
+        <span>Source: tradeforopp · MPL 2.0</span>
+        <a href="#top">Back to top ↑</a>
+      </footer>
+    </div>
+  </main>
+
+  <script type="application/json" id="inputs-schema">
+  [
+    { "id": "maxDays", "name": "Session Drawing Limit", "type": "int", "defval": 3, "min": 1, "max": 500, "step": 1, "group": "Settings" },
+    { "id": "tfLimit", "name": "Timeframe Limit", "type": "timeframe", "defval": "30", "group": "Settings" },
+    { "id": "gmtTz", "name": "Timezone", "type": "select", "defval": "America/New_York", "options": ["America/New_York", "GMT-12", "GMT-11", "GMT-10", "GMT-9", "GMT-8", "GMT-7", "GMT-6", "GMT-5", "GMT-4", "GMT-3", "GMT-2", "GMT-1", "GMT+0", "GMT+1", "GMT+2", "GMT+3", "GMT+4", "GMT+5", "GMT+6", "GMT+7", "GMT+8", "GMT+9", "GMT+10", "GMT+11", "GMT+12", "GMT+13", "GMT+14"], "group": "Settings" },
+    { "id": "lblSize", "name": "Label Size", "type": "select", "defval": "Normal", "options": ["Auto", "Tiny", "Small", "Normal", "Large", "Huge"], "group": "Settings" },
+    { "id": "txtColor", "name": "Text Color", "type": "color", "defval": "#000000", "group": "Settings" },
+    { "id": "useCutoff", "name": "Drawing Cutoff Time", "type": "bool", "defval": false, "group": "Settings" },
+    { "id": "cutoff", "name": "Drawing Cutoff Window", "type": "session", "defval": "18:00-18:01", "group": "Settings" },
+
+    { "id": "showKz", "name": "Show Killzone Boxes", "type": "bool", "defval": true, "group": "Killzones" },
+    { "id": "showKzText", "name": "Killzone Box Text", "type": "bool", "defval": true, "group": "Killzones" },
+    { "id": "useAsia", "name": "Enable Asia Killzone", "type": "bool", "defval": true, "group": "Killzones" },
+    { "id": "asTxt", "name": "Asia Name", "type": "text", "defval": "Asia", "group": "Killzones" },
+    { "id": "asia", "name": "Asia Session", "type": "session", "defval": "20:00-00:00", "group": "Killzones" },
+    { "id": "asColor", "name": "Asia Color", "type": "color", "defval": "#2962FF", "tab": "style", "group": "Killzones" },
+    { "id": "useLondon", "name": "Enable London Killzone", "type": "bool", "defval": true, "group": "Killzones" },
+    { "id": "loTxt", "name": "London Name", "type": "text", "defval": "London", "group": "Killzones" },
+    { "id": "london", "name": "London Session", "type": "session", "defval": "02:00-05:00", "group": "Killzones" },
+    { "id": "loColor", "name": "London Color", "type": "color", "defval": "#F23645", "tab": "style", "group": "Killzones" },
+    { "id": "useNyam", "name": "Enable NY AM Killzone", "type": "bool", "defval": true, "group": "Killzones" },
+    { "id": "naTxt", "name": "NY AM Name", "type": "text", "defval": "NY AM", "group": "Killzones" },
+    { "id": "nyam", "name": "NY AM Session", "type": "session", "defval": "09:30-11:00", "group": "Killzones" },
+    { "id": "naColor", "name": "NY AM Color", "type": "color", "defval": "#089981", "tab": "style", "group": "Killzones" },
+    { "id": "useNylu", "name": "Enable NY Lunch Killzone", "type": "bool", "defval": true, "group": "Killzones" },
+    { "id": "nlTxt", "name": "NY Lunch Name", "type": "text", "defval": "NY Lunch", "group": "Killzones" },
+    { "id": "nylu", "name": "NY Lunch Session", "type": "session", "defval": "12:00-13:00", "group": "Killzones" },
+    { "id": "nlColor", "name": "NY Lunch Color", "type": "color", "defval": "#FDD835", "tab": "style", "group": "Killzones" },
+    { "id": "useNypm", "name": "Enable NY PM Killzone", "type": "bool", "defval": true, "group": "Killzones" },
+    { "id": "npTxt", "name": "NY PM Name", "type": "text", "defval": "NY PM", "group": "Killzones" },
+    { "id": "nypm", "name": "NY PM Session", "type": "session", "defval": "13:30-16:00", "group": "Killzones" },
+    { "id": "npColor", "name": "NY PM Color", "type": "color", "defval": "#9C27B0", "tab": "style", "group": "Killzones" },
+    { "id": "boxTransparency", "name": "Box Transparency", "type": "int", "defval": 70, "min": 0, "max": 100, "step": 1, "group": "Killzones" },
+    { "id": "textTransparency", "name": "Text Transparency", "type": "int", "defval": 50, "min": 0, "max": 100, "step": 1, "group": "Killzones" },
+
+    { "id": "showPivots", "name": "Show Pivots", "type": "bool", "defval": true, "group": "Killzone Pivots" },
+    { "id": "useAlerts", "name": "Alert Broken Pivots", "type": "bool", "defval": true, "group": "Killzone Pivots" },
+    { "id": "showMidpoints", "name": "Show Pivot Midpoints", "type": "bool", "defval": false, "group": "Killzone Pivots" },
+    { "id": "stopMidpoints", "name": "Stop Midpoints Once Mitigated", "type": "bool", "defval": true, "group": "Killzone Pivots" },
+    { "id": "showPivotLabels", "name": "Show Pivot Labels", "type": "bool", "defval": true, "group": "Killzone Pivots" },
+    { "id": "labelPrice", "name": "Display Price On Label", "type": "bool", "defval": false, "group": "Killzone Pivots" },
+    { "id": "labelRight", "name": "Labels On Right Side", "type": "bool", "defval": false, "group": "Killzone Pivots" },
+    { "id": "extPivots", "name": "Extend Pivots", "type": "select", "defval": "Until Mitigated", "options": ["Until Mitigated", "Past Mitigation"], "group": "Killzone Pivots" },
+    { "id": "extWhich", "name": "Extend Pivots From", "type": "select", "defval": "Most Recent", "options": ["Most Recent", "All"], "group": "Killzone Pivots" },
+    { "id": "ashStr", "name": "Asia High Label", "type": "text", "defval": "AS.H", "group": "Killzone Pivots" },
+    { "id": "aslStr", "name": "Asia Low Label", "type": "text", "defval": "AS.L", "group": "Killzone Pivots" },
+    { "id": "lohStr", "name": "London High Label", "type": "text", "defval": "LO.H", "group": "Killzone Pivots" },
+    { "id": "lolStr", "name": "London Low Label", "type": "text", "defval": "LO.L", "group": "Killzone Pivots" },
+    { "id": "nahStr", "name": "NY AM High Label", "type": "text", "defval": "NYAM.H", "group": "Killzone Pivots" },
+    { "id": "nalStr", "name": "NY AM Low Label", "type": "text", "defval": "NYAM.L", "group": "Killzone Pivots" },
+    { "id": "nlhStr", "name": "NY Lunch High Label", "type": "text", "defval": "NYL.H", "group": "Killzone Pivots" },
+    { "id": "nllStr", "name": "NY Lunch Low Label", "type": "text", "defval": "NYL.L", "group": "Killzone Pivots" },
+    { "id": "nphStr", "name": "NY PM High Label", "type": "text", "defval": "NYPM.H", "group": "Killzone Pivots" },
+    { "id": "nplStr", "name": "NY PM Low Label", "type": "text", "defval": "NYPM.L", "group": "Killzone Pivots" },
+    { "id": "kzpStyle", "name": "Pivot Line Style", "type": "select", "defval": "Solid", "options": ["Solid", "Dotted", "Dashed"], "tab": "style", "group": "Killzone Pivots" },
+    { "id": "kzpWidth", "name": "Pivot Line Width", "type": "int", "defval": 1, "min": 1, "max": 4, "step": 1, "tab": "style", "group": "Killzone Pivots" },
+    { "id": "kzmStyle", "name": "Midpoint Line Style", "type": "select", "defval": "Dotted", "options": ["Solid", "Dotted", "Dashed"], "tab": "style", "group": "Killzone Pivots" },
+    { "id": "kzmWidth", "name": "Midpoint Line Width", "type": "int", "defval": 1, "min": 1, "max": 4, "step": 1, "tab": "style", "group": "Killzone Pivots" },
+
+    { "id": "showRange", "name": "Show Killzone Range Table", "type": "bool", "defval": false, "group": "Killzone Range" },
+    { "id": "showRangeAvg", "name": "Show Average Range", "type": "bool", "defval": true, "group": "Killzone Range" },
+    { "id": "rangeAvg", "name": "Average Length", "type": "int", "defval": 5, "min": 0, "max": 100, "step": 1, "group": "Killzone Range" },
+    { "id": "rangePos", "name": "Table Position", "type": "select", "defval": "Top Right", "options": ["Bottom Center", "Bottom Left", "Bottom Right", "Middle Center", "Middle Left", "Middle Right", "Top Center", "Top Left", "Top Right"], "group": "Killzone Range" },
+    { "id": "rangeSize", "name": "Table Size", "type": "select", "defval": "Normal", "options": ["Auto", "Tiny", "Small", "Normal", "Large", "Huge"], "group": "Killzone Range" },
+
+    { "id": "sepUnlimited", "name": "Unlimited DWM Drawings", "type": "bool", "defval": false, "group": "Day - Week - Month" },
+    { "id": "alertHL", "name": "Alert High/Low Break", "type": "bool", "defval": false, "group": "Day - Week - Month" },
+    { "id": "showDOpen", "name": "Daily Open Line", "type": "bool", "defval": false, "group": "Day - Week - Month" },
+    { "id": "dhl", "name": "Daily High/Low", "type": "bool", "defval": false, "group": "Day - Week - Month" },
+    { "id": "ds", "name": "Daily Separators", "type": "bool", "defval": false, "group": "Day - Week - Month" },
+    { "id": "dColor", "name": "Daily Color", "type": "color", "defval": "#2962FF", "tab": "style", "group": "Day - Week - Month" },
+    { "id": "showWOpen", "name": "Weekly Open Line", "type": "bool", "defval": false, "group": "Day - Week - Month" },
+    { "id": "whl", "name": "Weekly High/Low", "type": "bool", "defval": false, "group": "Day - Week - Month" },
+    { "id": "ws", "name": "Weekly Separators", "type": "bool", "defval": false, "group": "Day - Week - Month" },
+    { "id": "wColor", "name": "Weekly Color", "type": "color", "defval": "#089981", "tab": "style", "group": "Day - Week - Month" },
+    { "id": "showMOpen", "name": "Monthly Open Line", "type": "bool", "defval": false, "group": "Day - Week - Month" },
+    { "id": "mhl", "name": "Monthly High/Low", "type": "bool", "defval": false, "group": "Day - Week - Month" },
+    { "id": "ms", "name": "Monthly Separators", "type": "bool", "defval": false, "group": "Day - Week - Month" },
+    { "id": "mColor", "name": "Monthly Color", "type": "color", "defval": "#F23645", "tab": "style", "group": "Day - Week - Month" },
+    { "id": "htfStyle", "name": "DWM Line Style", "type": "select", "defval": "Solid", "options": ["Solid", "Dotted", "Dashed"], "tab": "style", "group": "Day - Week - Month" },
+    { "id": "htfWidth", "name": "DWM Line Width", "type": "int", "defval": 1, "min": 1, "max": 4, "step": 1, "tab": "style", "group": "Day - Week - Month" },
+    { "id": "dowLabels", "name": "Day Of Week Labels", "type": "bool", "defval": true, "group": "Day - Week - Month" },
+    { "id": "dowYloc", "name": "Day Label Location", "type": "select", "defval": "Bottom", "options": ["Top", "Bottom"], "group": "Day - Week - Month" },
+    { "id": "dowXloc", "name": "Day Label Anchor", "type": "select", "defval": "Midnight", "options": ["Midnight", "Midday"], "group": "Day - Week - Month" },
+    { "id": "dowHideWknd", "name": "Hide Weekend Labels", "type": "bool", "defval": true, "group": "Day - Week - Month" },
+
+    { "id": "openUnlimited", "name": "Unlimited Open Lines", "type": "bool", "defval": false, "group": "Opening Prices" },
+    { "id": "useH1", "name": "Enable Open 1", "type": "bool", "defval": false, "group": "Opening Prices" },
+    { "id": "h1Text", "name": "Open 1 Label", "type": "text", "defval": "True Day Open", "group": "Opening Prices" },
+    { "id": "h1", "name": "Open 1 Session", "type": "session", "defval": "00:00-00:01", "group": "Opening Prices" },
+    { "id": "h1Color", "name": "Open 1 Color", "type": "color", "defval": "#000000", "tab": "style", "group": "Opening Prices" },
+    { "id": "useH2", "name": "Enable Open 2", "type": "bool", "defval": false, "group": "Opening Prices" },
+    { "id": "h2Text", "name": "Open 2 Label", "type": "text", "defval": "06:00", "group": "Opening Prices" },
+    { "id": "h2", "name": "Open 2 Session", "type": "session", "defval": "06:00-06:01", "group": "Opening Prices" },
+    { "id": "h2Color", "name": "Open 2 Color", "type": "color", "defval": "#000000", "tab": "style", "group": "Opening Prices" },
+    { "id": "useH3", "name": "Enable Open 3", "type": "bool", "defval": false, "group": "Opening Prices" },
+    { "id": "h3Text", "name": "Open 3 Label", "type": "text", "defval": "10:00", "group": "Opening Prices" },
+    { "id": "h3", "name": "Open 3 Session", "type": "session", "defval": "10:00-10:01", "group": "Opening Prices" },
+    { "id": "h3Color", "name": "Open 3 Color", "type": "color", "defval": "#000000", "tab": "style", "group": "Opening Prices" },
+    { "id": "useH4", "name": "Enable Open 4", "type": "bool", "defval": false, "group": "Opening Prices" },
+    { "id": "h4Text", "name": "Open 4 Label", "type": "text", "defval": "14:00", "group": "Opening Prices" },
+    { "id": "h4", "name": "Open 4 Session", "type": "session", "defval": "14:00-14:01", "group": "Opening Prices" },
+    { "id": "h4Color", "name": "Open 4 Color", "type": "color", "defval": "#000000", "tab": "style", "group": "Opening Prices" },
+    { "id": "useH5", "name": "Enable Open 5", "type": "bool", "defval": false, "group": "Opening Prices" },
+    { "id": "h5Text", "name": "Open 5 Label", "type": "text", "defval": "00:00", "group": "Opening Prices" },
+    { "id": "h5", "name": "Open 5 Session", "type": "session", "defval": "00:00-00:01", "group": "Opening Prices" },
+    { "id": "h5Color", "name": "Open 5 Color", "type": "color", "defval": "#000000", "tab": "style", "group": "Opening Prices" },
+    { "id": "useH6", "name": "Enable Open 6", "type": "bool", "defval": false, "group": "Opening Prices" },
+    { "id": "h6Text", "name": "Open 6 Label", "type": "text", "defval": "00:00", "group": "Opening Prices" },
+    { "id": "h6", "name": "Open 6 Session", "type": "session", "defval": "00:00-00:01", "group": "Opening Prices" },
+    { "id": "h6Color", "name": "Open 6 Color", "type": "color", "defval": "#000000", "tab": "style", "group": "Opening Prices" },
+    { "id": "useH7", "name": "Enable Open 7", "type": "bool", "defval": false, "group": "Opening Prices" },
+    { "id": "h7Text", "name": "Open 7 Label", "type": "text", "defval": "00:00", "group": "Opening Prices" },
+    { "id": "h7", "name": "Open 7 Session", "type": "session", "defval": "00:00-00:01", "group": "Opening Prices" },
+    { "id": "h7Color", "name": "Open 7 Color", "type": "color", "defval": "#000000", "tab": "style", "group": "Opening Prices" },
+    { "id": "useH8", "name": "Enable Open 8", "type": "bool", "defval": false, "group": "Opening Prices" },
+    { "id": "h8Text", "name": "Open 8 Label", "type": "text", "defval": "00:00", "group": "Opening Prices" },
+    { "id": "h8", "name": "Open 8 Session", "type": "session", "defval": "00:00-00:01", "group": "Opening Prices" },
+    { "id": "h8Color", "name": "Open 8 Color", "type": "color", "defval": "#000000", "tab": "style", "group": "Opening Prices" },
+    { "id": "hzStyle", "name": "Open Line Style", "type": "select", "defval": "Dotted", "options": ["Solid", "Dotted", "Dashed"], "tab": "style", "group": "Opening Prices" },
+    { "id": "hzWidth", "name": "Open Line Width", "type": "int", "defval": 1, "min": 1, "max": 4, "step": 1, "tab": "style", "group": "Opening Prices" },
+
+    { "id": "vUnlimited", "name": "Unlimited Timestamp Lines", "type": "bool", "defval": false, "group": "Timestamps" },
+    { "id": "useV1", "name": "Enable Timestamp 1", "type": "bool", "defval": false, "group": "Timestamps" },
+    { "id": "v1", "name": "Timestamp 1 Session", "type": "session", "defval": "00:00-00:01", "group": "Timestamps" },
+    { "id": "v1Color", "name": "Timestamp 1 Color", "type": "color", "defval": "#000000", "tab": "style", "group": "Timestamps" },
+    { "id": "useV2", "name": "Enable Timestamp 2", "type": "bool", "defval": false, "group": "Timestamps" },
+    { "id": "v2", "name": "Timestamp 2 Session", "type": "session", "defval": "08:00-08:01", "group": "Timestamps" },
+    { "id": "v2Color", "name": "Timestamp 2 Color", "type": "color", "defval": "#000000", "tab": "style", "group": "Timestamps" },
+    { "id": "useV3", "name": "Enable Timestamp 3", "type": "bool", "defval": false, "group": "Timestamps" },
+    { "id": "v3", "name": "Timestamp 3 Session", "type": "session", "defval": "10:00-10:01", "group": "Timestamps" },
+    { "id": "v3Color", "name": "Timestamp 3 Color", "type": "color", "defval": "#000000", "tab": "style", "group": "Timestamps" },
+    { "id": "useV4", "name": "Enable Timestamp 4", "type": "bool", "defval": false, "group": "Timestamps" },
+    { "id": "v4", "name": "Timestamp 4 Session", "type": "session", "defval": "12:00-12:01", "group": "Timestamps" },
+    { "id": "v4Color", "name": "Timestamp 4 Color", "type": "color", "defval": "#000000", "tab": "style", "group": "Timestamps" },
+    { "id": "vlStyle", "name": "Timestamp Line Style", "type": "select", "defval": "Dotted", "options": ["Solid", "Dotted", "Dashed"], "tab": "style", "group": "Timestamps" },
+    { "id": "vlWidth", "name": "Timestamp Line Width", "type": "int", "defval": 1, "min": 1, "max": 4, "step": 1, "tab": "style", "group": "Timestamps" },
+
+    { "id": "showHtf1", "name": "Show HTF 1", "type": "bool", "defval": true, "group": "HTF Candles" },
+    { "id": "htfTf1", "name": "HTF 1 Timeframe", "type": "timeframe", "defval": "5", "group": "HTF Candles" },
+    { "id": "htfMax1", "name": "HTF 1 Candles", "type": "int", "defval": 10, "min": 1, "max": 100, "step": 1, "group": "HTF Candles" },
+    { "id": "showHtf2", "name": "Show HTF 2", "type": "bool", "defval": true, "group": "HTF Candles" },
+    { "id": "htfTf2", "name": "HTF 2 Timeframe", "type": "timeframe", "defval": "15", "group": "HTF Candles" },
+    { "id": "htfMax2", "name": "HTF 2 Candles", "type": "int", "defval": 10, "min": 1, "max": 100, "step": 1, "group": "HTF Candles" },
+    { "id": "showHtf3", "name": "Show HTF 3", "type": "bool", "defval": true, "group": "HTF Candles" },
+    { "id": "htfTf3", "name": "HTF 3 Timeframe", "type": "timeframe", "defval": "60", "group": "HTF Candles" },
+    { "id": "htfMax3", "name": "HTF 3 Candles", "type": "int", "defval": 10, "min": 1, "max": 100, "step": 1, "group": "HTF Candles" },
+    { "id": "showHtf4", "name": "Show HTF 4", "type": "bool", "defval": true, "group": "HTF Candles" },
+    { "id": "htfTf4", "name": "HTF 4 Timeframe", "type": "timeframe", "defval": "240", "group": "HTF Candles" },
+    { "id": "htfMax4", "name": "HTF 4 Candles", "type": "int", "defval": 10, "min": 1, "max": 100, "step": 1, "group": "HTF Candles" },
+    { "id": "showHtf5", "name": "Show HTF 5", "type": "bool", "defval": true, "group": "HTF Candles" },
+    { "id": "htfTf5", "name": "HTF 5 Timeframe", "type": "timeframe", "defval": "1D", "group": "HTF Candles" },
+    { "id": "htfMax5", "name": "HTF 5 Candles", "type": "int", "defval": 10, "min": 1, "max": 100, "step": 1, "group": "HTF Candles" },
+    { "id": "showHtf6", "name": "Show HTF 6", "type": "bool", "defval": true, "group": "HTF Candles" },
+    { "id": "htfTf6", "name": "HTF 6 Timeframe", "type": "timeframe", "defval": "1W", "group": "HTF Candles" },
+    { "id": "htfMax6", "name": "HTF 6 Candles", "type": "int", "defval": 10, "min": 1, "max": 100, "step": 1, "group": "HTF Candles" },
+    { "id": "maxSets", "name": "Limit To Next HTFs Only", "type": "int", "defval": 6, "min": 1, "max": 6, "step": 1, "group": "HTF Candles" },
+    { "id": "useCustomDaily", "name": "Custom Daily Candle Open", "type": "bool", "defval": false, "group": "HTF Candles" },
+    { "id": "customDaily", "name": "Custom Daily Open Time", "type": "select", "defval": "Midnight", "options": ["Midnight", "8:30", "9:30"], "group": "HTF Candles" },
+    { "id": "bullBody", "name": "Bull Body Color", "type": "color", "defval": "#089981E6", "tab": "style", "group": "HTF Candles" },
+    { "id": "bearBody", "name": "Bear Body Color", "type": "color", "defval": "#F23645E6", "tab": "style", "group": "HTF Candles" },
+    { "id": "bullBorder", "name": "Bull Border Color", "type": "color", "defval": "#000000E6", "tab": "style", "group": "HTF Candles" },
+    { "id": "bearBorder", "name": "Bear Border Color", "type": "color", "defval": "#000000E6", "tab": "style", "group": "HTF Candles" },
+    { "id": "bullWick", "name": "Bull Wick Color", "type": "color", "defval": "#000000E6", "tab": "style", "group": "HTF Candles" },
+    { "id": "bearWick", "name": "Bear Wick Color", "type": "color", "defval": "#000000E6", "tab": "style", "group": "HTF Candles" },
+    { "id": "htfOffset", "name": "Padding From Current Candles", "type": "int", "defval": 10, "min": 1, "max": 200, "step": 1, "group": "HTF Candles" },
+    { "id": "htfBuffer", "name": "Space Between Candles", "type": "int", "defval": 1, "min": 1, "max": 4, "step": 1, "group": "HTF Candles" },
+    { "id": "htfGap", "name": "Space Between Higher Timeframes", "type": "int", "defval": 10, "min": 1, "max": 10, "step": 1, "group": "HTF Candles" },
+    { "id": "htfCandleWidth", "name": "HTF Candle Width", "type": "int", "defval": 1, "min": 1, "max": 4, "step": 1, "group": "HTF Candles" },
+    { "id": "htfLabelShow", "name": "Show HTF Labels", "type": "bool", "defval": true, "group": "HTF Labels" },
+    { "id": "htfLabelColor", "name": "HTF Label Color", "type": "color", "defval": "#000000E6", "tab": "style", "group": "HTF Labels" },
+    { "id": "htfLabelSize", "name": "HTF Label Size", "type": "select", "defval": "Large", "options": ["Tiny", "Small", "Normal", "Large", "Huge"], "tab": "style", "group": "HTF Labels" },
+    { "id": "labelPosition", "name": "HTF Label Positions", "type": "select", "defval": "Both", "options": ["Both", "Top", "Bottom"], "group": "HTF Labels" },
+    { "id": "labelAlignment", "name": "HTF Label Alignment", "type": "select", "defval": "Align", "options": ["Align", "Follow Candles"], "group": "HTF Labels" },
+    { "id": "htfTimerShow", "name": "Show Remaining Time", "type": "bool", "defval": true, "group": "HTF Labels" },
+    { "id": "htfTimerColor", "name": "Countdown Color", "type": "color", "defval": "#000000E6", "tab": "style", "group": "HTF Labels" },
+    { "id": "htfTimerSize", "name": "Countdown Size", "type": "select", "defval": "Normal", "options": ["Tiny", "Small", "Normal", "Large", "Huge"], "tab": "style", "group": "HTF Labels" },
+    { "id": "dailyName", "name": "Show Interval Value", "type": "bool", "defval": false, "group": "HTF Labels" },
+    { "id": "dowColor", "name": "Interval Value Color", "type": "color", "defval": "#000000", "tab": "style", "group": "HTF Labels" },
+    { "id": "dowSize", "name": "Interval Value Size", "type": "select", "defval": "Small", "options": ["Tiny", "Small", "Normal", "Large", "Huge"], "tab": "style", "group": "HTF Labels" },
+    { "id": "fvgShow", "name": "Show Fair Value Gap", "type": "bool", "defval": true, "group": "Imbalance" },
+    { "id": "fvgColor", "name": "Fair Value Gap Color", "type": "color", "defval": "#787B8633", "tab": "style", "group": "Imbalance" },
+    { "id": "viShow", "name": "Show Volume Imbalance", "type": "bool", "defval": true, "group": "Imbalance" },
+    { "id": "viColor", "name": "Volume Imbalance Color", "type": "color", "defval": "#F2364580", "tab": "style", "group": "Imbalance" },
+    { "id": "traceShow", "name": "Show Trace Lines", "type": "bool", "defval": false, "group": "Trace" },
+    { "id": "traceOColor", "name": "Open Trace Color", "type": "color", "defval": "#787B8680", "tab": "style", "group": "Trace" },
+    { "id": "traceOStyle", "name": "Open Trace Style", "type": "select", "defval": "Dotted", "options": ["Solid", "Dashed", "Dotted"], "tab": "style", "group": "Trace" },
+    { "id": "traceOSize", "name": "Open Trace Width", "type": "int", "defval": 1, "min": 1, "max": 4, "step": 1, "tab": "style", "group": "Trace" },
+    { "id": "traceCColor", "name": "Close Trace Color", "type": "color", "defval": "#787B8680", "tab": "style", "group": "Trace" },
+    { "id": "traceCStyle", "name": "Close Trace Style", "type": "select", "defval": "Dotted", "options": ["Solid", "Dashed", "Dotted"], "tab": "style", "group": "Trace" },
+    { "id": "traceCSize", "name": "Close Trace Width", "type": "int", "defval": 1, "min": 1, "max": 4, "step": 1, "tab": "style", "group": "Trace" },
+    { "id": "traceHColor", "name": "High Trace Color", "type": "color", "defval": "#787B8680", "tab": "style", "group": "Trace" },
+    { "id": "traceHStyle", "name": "High Trace Style", "type": "select", "defval": "Dotted", "options": ["Solid", "Dashed", "Dotted"], "tab": "style", "group": "Trace" },
+    { "id": "traceHSize", "name": "High Trace Width", "type": "int", "defval": 1, "min": 1, "max": 4, "step": 1, "tab": "style", "group": "Trace" },
+    { "id": "traceLColor", "name": "Low Trace Color", "type": "color", "defval": "#787B8680", "tab": "style", "group": "Trace" },
+    { "id": "traceLStyle", "name": "Low Trace Style", "type": "select", "defval": "Dotted", "options": ["Solid", "Dashed", "Dotted"], "tab": "style", "group": "Trace" },
+    { "id": "traceLSize", "name": "Low Trace Width", "type": "int", "defval": 1, "min": 1, "max": 4, "step": 1, "tab": "style", "group": "Trace" },
+    { "id": "traceAnchor", "name": "Trace Anchor", "type": "select", "defval": "First Timeframe", "options": ["First Timeframe", "Last Timeframe"], "group": "Trace" },
+    { "id": "priceLabelShow", "name": "Show Trace Price Labels", "type": "bool", "defval": false, "group": "Trace" },
+    { "id": "priceLabelColor", "name": "Trace Price Color", "type": "color", "defval": "#000000E6", "tab": "style", "group": "Trace" },
+    { "id": "priceLabelSize", "name": "Trace Price Size", "type": "select", "defval": "Small", "options": ["Tiny", "Small", "Normal", "Large", "Huge"], "tab": "style", "group": "Trace" }
+  ]
+  </script>
+
+  <script type="text/plain" id="indicator-script">
+// ICT Killzones & HTF Candle [ZynexTs] — Pine Script v6 to KlineCharts v10
+// Overlay: on (main chart). Precision: symbol default.
+// Alerts are evaluated but not emitted; the indicator only calculates and draws.
+
+const TF_1D = 86400
+const TF_1W = 604800
+const TF_1M = 2592000
+
+const SIZE_PX = { Auto: 12, Tiny: 9, Small: 10, Normal: 12, Large: 14, Huge: 18 }
+const DOW_NAMES = ['', 'SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
+
+function dashFor(style) {
+  if (style === 'Dotted') return [1, 3]
+  if (style === 'Dashed') return [4, 4]
+  return undefined
+}
+
+function sizePx(name) {
+  return SIZE_PX[name] || 11
+}
+
+function secOf(tf, chartSec) {
+  if (!tf) return chartSec
+  if (tf === '1D' || tf === 'D') return TF_1D
+  if (tf === '1W' || tf === 'W') return TF_1W
+  if (tf === '1M' || tf === 'M') return TF_1M
+  const value = parseInt(tf, 10)
+  return isFinite(value) && value > 0 ? value * 60 : chartSec
+}
+
+function validTf(tf, chartSec) {
+  if (!tf) return false
+  const seconds = secOf(tf, chartSec)
+  if (seconds >= TF_1D && seconds > chartSec) return true
+  return chartSec < seconds && Math.round(seconds / chartSec) === seconds / chartSec
+}
+
+function htfName(tf, seconds) {
+  if (seconds < 60) return String(seconds) + 's'
+  if (seconds / 60 < 60) return String(seconds / 60) + 'm'
+  if (seconds / 3600 < 24) return String(seconds / 3600) + 'H'
+  return tf
+}
+
+function fmtDuration(ms) {
+  const total = Math.max(0, Math.floor(ms / 1000))
+  const days = Math.floor(total / 86400)
+  const hours = Math.floor((total - days * 86400) / 3600)
+  const minutes = Math.floor((total - days * 86400 - hours * 3600) / 60)
+  const seconds = total - days * 86400 - hours * 3600 - minutes * 60
+  const two = (v) => String(v).padStart(2, '0')
+  const clock = two(hours) + ':' + two(minutes) + ':' + two(seconds)
+  return days > 0 ? String(days) + 'D ' + clock : clock
+}
+
+function priceText(value) {
+  return String(Math.round(value * 100000) / 100000)
+}
+
+return {
+  figures: [],
+  calc(dataList, indicator) {
+    const inputs = indicator.extendData && indicator.extendData.inputs ? indicator.extendData.inputs : {}
+    const {
+      maxDays = 3, tfLimit = '30', gmtTz = 'America/New_York', lblSize = 'Normal', txtColor = '#000000',
+      useCutoff = false, cutoff = '18:00-18:01',
+      showKz = true, showKzText = true,
+      useAsia = true, asTxt = 'Asia', asia = '20:00-00:00', asColor = '#2962FF',
+      useLondon = true, loTxt = 'London', london = '02:00-05:00', loColor = '#F23645',
+      useNyam = true, naTxt = 'NY AM', nyam = '09:30-11:00', naColor = '#089981',
+      useNylu = true, nlTxt = 'NY Lunch', nylu = '12:00-13:00', nlColor = '#FDD835',
+      useNypm = true, npTxt = 'NY PM', nypm = '13:30-16:00', npColor = '#9C27B0',
+      boxTransparency = 70, textTransparency = 50,
+      showPivots = true, useAlerts = true, showMidpoints = false, stopMidpoints = true,
+      showPivotLabels = true, labelPrice = false, labelRight = false,
+      extPivots = 'Until Mitigated', extWhich = 'Most Recent',
+      ashStr = 'AS.H', aslStr = 'AS.L', lohStr = 'LO.H', lolStr = 'LO.L',
+      nahStr = 'NYAM.H', nalStr = 'NYAM.L', nlhStr = 'NYL.H', nllStr = 'NYL.L',
+      nphStr = 'NYPM.H', nplStr = 'NYPM.L',
+      kzpStyle = 'Solid', kzpWidth = 1, kzmStyle = 'Dotted', kzmWidth = 1,
+      showRange = false, showRangeAvg = true, rangeAvg = 5, rangePos = 'Top Right', rangeSize = 'Normal',
+      sepUnlimited = false, alertHL = false,
+      showDOpen = false, dhl = false, ds = false, dColor = '#2962FF',
+      showWOpen = false, whl = false, ws = false, wColor = '#089981',
+      showMOpen = false, mhl = false, ms = false, mColor = '#F23645',
+      htfStyle = 'Solid', htfWidth = 1, dowLabels = true, dowYloc = 'Bottom', dowXloc = 'Midnight', dowHideWknd = true,
+      openUnlimited = false, hzStyle = 'Dotted', hzWidth = 1,
+      useH1 = false, h1Text = 'True Day Open', h1 = '00:00-00:01', h1Color = '#000000',
+      useH2 = false, h2Text = '06:00', h2 = '06:00-06:01', h2Color = '#000000',
+      useH3 = false, h3Text = '10:00', h3 = '10:00-10:01', h3Color = '#000000',
+      useH4 = false, h4Text = '14:00', h4 = '14:00-14:01', h4Color = '#000000',
+      useH5 = false, h5Text = '00:00', h5 = '00:00-00:01', h5Color = '#000000',
+      useH6 = false, h6Text = '00:00', h6 = '00:00-00:01', h6Color = '#000000',
+      useH7 = false, h7Text = '00:00', h7 = '00:00-00:01', h7Color = '#000000',
+      useH8 = false, h8Text = '00:00', h8 = '00:00-00:01', h8Color = '#000000',
+      vUnlimited = false, vlStyle = 'Dotted', vlWidth = 1,
+      useV1 = false, v1 = '00:00-00:01', v1Color = '#000000',
+      useV2 = false, v2 = '08:00-08:01', v2Color = '#000000',
+      useV3 = false, v3 = '10:00-10:01', v3Color = '#000000',
+      useV4 = false, v4 = '12:00-12:01', v4Color = '#000000',
+      showHtf1 = true, htfTf1 = '5', htfMax1 = 10,
+      showHtf2 = true, htfTf2 = '15', htfMax2 = 10,
+      showHtf3 = true, htfTf3 = '60', htfMax3 = 10,
+      showHtf4 = true, htfTf4 = '240', htfMax4 = 10,
+      showHtf5 = true, htfTf5 = '1D', htfMax5 = 10,
+      showHtf6 = true, htfTf6 = '1W', htfMax6 = 10,
+      maxSets = 6, useCustomDaily = false, customDaily = 'Midnight',
+      bullBody = '#089981E6', bearBody = '#F23645E6', bullBorder = '#000000E6', bearBorder = '#000000E6',
+      bullWick = '#000000E6', bearWick = '#000000E6',
+      htfOffset = 10, htfBuffer = 1, htfGap = 10, htfCandleWidth = 1,
+      htfLabelShow = true, htfLabelColor = '#000000E6', htfLabelSize = 'Large',
+      labelPosition = 'Both', labelAlignment = 'Align',
+      htfTimerShow = true, htfTimerColor = '#000000E6', htfTimerSize = 'Normal',
+      dailyName = false, dowColor = '#000000', dowSize = 'Small',
+      fvgShow = true, fvgColor = '#787B8633', viShow = true, viColor = '#F2364580',
+      traceShow = false, traceOColor = '#787B8680', traceOStyle = 'Dotted', traceOSize = 1,
+      traceCColor = '#787B8680', traceCStyle = 'Dotted', traceCSize = 1,
+      traceHColor = '#787B8680', traceHStyle = 'Dotted', traceHSize = 1,
+      traceLColor = '#787B8680', traceLStyle = 'Dotted', traceLSize = 1,
+      traceAnchor = 'First Timeframe',
+      priceLabelShow = false, priceLabelColor = '#000000E6', priceLabelSize = 'Small'
+    } = inputs
+
+    const n = dataList.length
+    const emptyRow = {}
+    const result = new Array(n)
+    result.fill(emptyRow)
+    if (!n) return result
+
+    const tz = gmtTz
+    const barMs = bv.detectBarMs(dataList) || 60000
+    const chartSec = Math.max(1, Math.round(barMs / 1000))
+    const lastIndex = n - 1
+    const lastTimestamp = dataList[lastIndex].timestamp
+    const allowed = chartSec <= secOf(tfLimit, chartSec)
+    const limit = Math.max(1, maxDays)
+    const maxPanels = Math.max(1, Math.min(6, maxSets))
+
+    const inside = (t, session) => {
+      const value = bv.time(t, session, tz)
+      return value !== null && value !== undefined
+    }
+
+    const dayKey = (t) => bv.year(t, tz) * 10000 + bv.month(t, tz) * 100 + bv.dayofmonth(t, tz)
+    const newDayAt = (i) => i === 0 || dayKey(dataList[i].timestamp) !== dayKey(dataList[i - 1].timestamp)
+    const newMonthAt = (i) => {
+      if (i === 0) return true
+      return dayKey(dataList[i].timestamp) !== dayKey(dataList[i - 1].timestamp) &&
+        bv.month(dataList[i].timestamp, tz) !== bv.month(dataList[i - 1].timestamp, tz)
+    }
+    const newWeekAt = (i) => {
+      if (i === 0) return true
+      const t = dataList[i].timestamp
+      const prev = dataList[i - 1].timestamp
+      if (bv.year(t, tz) !== bv.year(prev, tz) || bv.month(t, tz) !== bv.month(prev, tz)) return true
+      const dow = bv.dayofweek(t, tz)
+      const prevDow = bv.dayofweek(prev, tz)
+      return dayKey(t) !== dayKey(prev) && (dow === 2 || dow < prevDow)
+    }
+
+    let cutoffIndex = -1
+    if (useCutoff) {
+      for (let i = 0; i < n; i += 1) {
+        if (inside(dataList[i].timestamp, cutoff)) cutoffIndex = i
+      }
+    }
+
+    const state = {
+      zones: [],
+      dwmOpen: [],
+      dwmHl: [],
+      separators: [],
+      opens: [],
+      vlines: [],
+      dow: [],
+      panels: [],
+      table: null,
+      htfTopAll: null,
+      htfBottomAll: null,
+      cfg: {
+        tz: tz,
+        txtColor: txtColor,
+        labelSizePx: sizePx(lblSize),
+        boxTransparency: boxTransparency,
+        textTransparency: textTransparency,
+        showKz: showKz,
+        showKzText: showKzText,
+        showPivots: showPivots,
+        showMidpoints: showMidpoints,
+        showPivotLabels: showPivotLabels,
+        labelPrice: labelPrice,
+        labelRight: labelRight,
+        kzpStyle: kzpStyle,
+        kzpWidth: kzpWidth,
+        kzmStyle: kzmStyle,
+        kzmWidth: kzmWidth,
+        htfWidth: htfWidth,
+        htfStyle: htfStyle,
+        showRange: showRange,
+        showRangeAvg: showRangeAvg,
+        rangePos: rangePos,
+        rangeSizePx: sizePx(rangeSize),
+        htfLabelShow: htfLabelShow,
+        htfLabelColor: htfLabelColor,
+        htfLabelSizePx: sizePx(htfLabelSize),
+        labelPosition: labelPosition,
+        labelAlignment: labelAlignment,
+        htfTimerShow: htfTimerShow,
+        htfTimerColor: htfTimerColor,
+        htfTimerSizePx: sizePx(htfTimerSize),
+        dailyName: dailyName,
+        dowColor: dowColor,
+        dowSizePx: sizePx(dowSize),
+        dowYloc: dowYloc,
+        fvgShow: fvgShow,
+        fvgColor: fvgColor,
+        viShow: viShow,
+        viColor: viColor,
+        traceShow: traceShow,
+        traceOColor: traceOColor,
+        traceOStyle: traceOStyle,
+        traceOSize: traceOSize,
+        traceCColor: traceCColor,
+        traceCStyle: traceCStyle,
+        traceCSize: traceCSize,
+        traceHColor: traceHColor,
+        traceHStyle: traceHStyle,
+        traceHSize: traceHSize,
+        traceLColor: traceLColor,
+        traceLStyle: traceLStyle,
+        traceLSize: traceLSize,
+        priceLabelShow: priceLabelShow,
+        priceLabelColor: priceLabelColor,
+        priceLabelSizePx: sizePx(priceLabelSize),
+        bullBody: bullBody,
+        bearBody: bearBody,
+        bullBorder: bullBorder,
+        bearBorder: bearBorder,
+        bullWick: bullWick,
+        bearWick: bearWick,
+        htfBuffer: htfBuffer
+      }
+    }
+
+    if (allowed) {
+      const defs = []
+      if (useAsia) defs.push({ id: 'asia', session: asia, color: asColor, label: asTxt, hiText: ashStr, loText: aslStr })
+      if (useLondon) defs.push({ id: 'london', session: london, color: loColor, label: loTxt, hiText: lohStr, loText: lolStr })
+      if (useNyam) defs.push({ id: 'nyam', session: nyam, color: naColor, label: naTxt, hiText: nahStr, loText: nalStr })
+      if (useNylu) defs.push({ id: 'nylu', session: nylu, color: nlColor, label: nlTxt, hiText: nlhStr, loText: nllStr })
+      if (useNypm) defs.push({ id: 'nypm', session: nypm, color: npColor, label: npTxt, hiText: nphStr, loText: nplStr })
+
+      for (const def of defs) {
+        const all = []
+        let current = null
+        let prevInside = false
+        for (let i = 0; i < n; i += 1) {
+          const bar = dataList[i]
+          const active = inside(bar.timestamp, def.session)
+          if (active) {
+            if (!current) {
+              current = { def: def, from: i, to: i, high: bar.high, low: bar.low, active: true }
+            }
+            current.to = i
+            if (bar.high > current.high) current.high = bar.high
+            if (bar.low < current.low) current.low = bar.low
+          } else if (current) {
+            current.active = false
+            all.push(current)
+            current = null
+          }
+          prevInside = active
+        }
+        if (current) all.push(current)
+
+        const completed = []
+        for (const zone of all) {
+          if (!zone.active) completed.push(zone.high - zone.low)
+        }
+        const avgSlice = rangeAvg > 0 ? completed.slice(-rangeAvg) : []
+        const average = avgSlice.length ? avgSlice.reduce((a, b) => a + b, 0) / avgSlice.length : null
+
+        const kept = all.slice(-limit)
+        for (let k = 0; k < kept.length; k += 1) {
+          const zone = kept[k]
+          const newest = k === kept.length - 1
+          const extend = extWhich === 'All' || newest
+          let hiTo = zone.to
+          let loTo = zone.to
+          let midTo = zone.to
+          let hiBroken = false
+          let loBroken = false
+          let midBroken = false
+          const mid = (zone.high + zone.low) / 2
+
+          if (extend && !zone.active) {
+            for (let j = zone.to + 1; j < n; j += 1) {
+              const bar = dataList[j]
+              if (!hiBroken && bar.high > zone.high) { hiBroken = true; hiTo = j }
+              if (!loBroken && bar.low < zone.low) { loBroken = true; loTo = j }
+              if (showMidpoints && stopMidpoints && !midBroken && bar.low <= mid && bar.high >= mid) { midBroken = true; midTo = j }
+              if (hiBroken && loBroken && (!showMidpoints || !stopMidpoints || midBroken)) break
+            }
+            if (!hiBroken) hiTo = lastIndex
+            if (!loBroken) loTo = lastIndex
+            if (showMidpoints && (!stopMidpoints || !midBroken)) midTo = lastIndex
+            if (extPivots === 'Past Mitigation') {
+              hiTo = lastIndex
+              loTo = lastIndex
+              if (showMidpoints) midTo = lastIndex
+            }
+          } else if (zone.active) {
+            hiTo = lastIndex
+            loTo = lastIndex
+            midTo = lastIndex
+          }
+          if (!extend) {
+            hiTo = zone.to
+            loTo = zone.to
+            midTo = zone.to
+          }
+          if (useCutoff && cutoffIndex >= zone.to) {
+            hiTo = Math.min(hiTo, cutoffIndex)
+            loTo = Math.min(loTo, cutoffIndex)
+            midTo = Math.min(midTo, cutoffIndex)
+          }
+
+          zone.hiTo = Math.max(zone.from, hiTo)
+          zone.loTo = Math.max(zone.from, loTo)
+          zone.midTo = Math.max(zone.from, midTo)
+          zone.hiBroken = hiBroken
+          zone.loBroken = loBroken
+          zone.midBroken = midBroken
+          zone.average = average
+          zone.range = zone.high - zone.low
+          zone.hiLabel = labelPrice ? def.hiText + ' (' + priceText(zone.high) + ')' : def.hiText
+          zone.loLabel = labelPrice ? def.loText + ' (' + priceText(zone.low) + ')' : def.loText
+          zone.color = def.color
+          zone.name = def.label
+          state.zones.push(zone)
+        }
+
+        if (showRange) {
+          const newest = kept[kept.length - 1]
+          if (!state.table) state.table = []
+          state.table.push({
+            name: def.label,
+            color: def.color,
+            range: newest ? newest.high - newest.low : null,
+            average: average,
+            count: avgSlice.length,
+            active: inside(lastTimestamp, def.session)
+          })
+        }
+      }
+
+      const hzDefs = []
+      if (useH1) hzDefs.push({ session: h1, text: h1Text, color: h1Color })
+      if (useH2) hzDefs.push({ session: h2, text: h2Text, color: h2Color })
+      if (useH3) hzDefs.push({ session: h3, text: h3Text, color: h3Color })
+      if (useH4) hzDefs.push({ session: h4, text: h4Text, color: h4Color })
+      if (useH5) hzDefs.push({ session: h5, text: h5Text, color: h5Color })
+      if (useH6) hzDefs.push({ session: h6, text: h6Text, color: h6Color })
+      if (useH7) hzDefs.push({ session: h7, text: h7Text, color: h7Color })
+      if (useH8) hzDefs.push({ session: h8, text: h8Text, color: h8Color })
+      for (const def of hzDefs) {
+        let prev = false
+        let currentLine = null
+        const lines = []
+        for (let i = 0; i < n; i += 1) {
+          const active = inside(dataList[i].timestamp, def.session)
+          if (active && !prev) {
+            if (currentLine) currentLine.to = i - 1
+            currentLine = { from: i, to: null, price: dataList[i].open, text: def.text, color: def.color }
+            lines.push(currentLine)
+          }
+          prev = active
+        }
+        if (currentLine) currentLine.to = lastIndex
+        const keep = openUnlimited ? lines : lines.slice(-limit)
+        for (const line of keep) {
+          if (useCutoff && cutoffIndex >= 0) {
+            line.to = line.from > cutoffIndex ? line.from : Math.min(line.to, cutoffIndex)
+          }
+          line.style = hzStyle
+          line.width = hzWidth
+          state.opens.push(line)
+        }
+      }
+
+      const vDefs = []
+      if (useV1) vDefs.push({ session: v1, color: v1Color })
+      if (useV2) vDefs.push({ session: v2, color: v2Color })
+      if (useV3) vDefs.push({ session: v3, color: v3Color })
+      if (useV4) vDefs.push({ session: v4, color: v4Color })
+      for (const def of vDefs) {
+        let prev = false
+        const items = []
+        for (let i = 0; i < n; i += 1) {
+          const active = inside(dataList[i].timestamp, def.session)
+          if (active && !prev) items.push({ index: i, color: def.color, style: vlStyle, width: vlWidth })
+          prev = active
+        }
+        const keep = vUnlimited ? items : items.slice(-limit)
+        for (const item of keep) state.vlines.push(item)
+      }
+
+      const dwm = (tf, useOpen, useHl, useSep, color) => {
+        if (!useOpen && !useHl && !useSep) return
+        let current = null
+        let openLine = null
+        let hiLine = null
+        let loLine = null
+        const openLines = []
+        const hlLines = []
+        const seps = []
+        const isNew = tf === 'D' ? newDayAt : tf === 'W' ? newWeekAt : newMonthAt
+        for (let i = 0; i < n; i += 1) {
+          const bar = dataList[i]
+          const change = isNew(i)
+          if (change) {
+            if (openLine) { openLine.to = i; openLine = null }
+            if (hiLine) { hiLine.to = i; hiLine = null }
+            if (loLine) { loLine.to = i; loLine = null }
+            const previous = current
+            current = { open: bar.open, high: bar.high, low: bar.low }
+            if (useOpen) {
+              openLine = { from: i, to: lastIndex, price: bar.open, text: tf + ' OPEN', color: color, style: htfStyle, width: htfWidth }
+              openLines.push(openLine)
+            }
+            if (useHl && previous) {
+              hiLine = { from: i, to: lastIndex, price: previous.high, text: 'P' + tf + 'H', color: color, style: htfStyle, width: htfWidth }
+              loLine = { from: i, to: lastIndex, price: previous.low, text: 'P' + tf + 'L', color: color, style: htfStyle, width: htfWidth }
+              hlLines.push(hiLine)
+              hlLines.push(loLine)
+            }
+            if (useSep) seps.push({ index: i, color: color, style: htfStyle, width: htfWidth })
+          } else if (current) {
+            if (bar.high > current.high) current.high = bar.high
+            if (bar.low < current.low) current.low = bar.low
+          }
+        }
+        const keepOpen = sepUnlimited ? openLines : openLines.slice(-limit)
+        const keepHl = sepUnlimited ? hlLines : hlLines.slice(-(limit * 2))
+        const keepSep = sepUnlimited ? seps : seps.slice(-limit)
+        for (const line of keepOpen) state.dwmOpen.push(line)
+        for (const line of keepHl) state.dwmHl.push(line)
+        for (const line of keepSep) state.separators.push(line)
+      }
+      dwm('D', showDOpen, dhl, ds, dColor)
+      dwm('W', showWOpen, whl, ws, wColor)
+      dwm('M', showMOpen, mhl, ms, mColor)
+
+      if (dowLabels && chartSec < TF_1D) {
+        const shift = dowXloc === 'Midday' ? 43200000 : 0
+        for (let i = 0; i < n; i += 1) {
+          const t = dataList[i].timestamp - shift
+          const dow = bv.dayofweek(t, tz)
+          const prevDow = i > 0 ? bv.dayofweek(dataList[i - 1].timestamp - shift, tz) : -1
+          if (dow !== prevDow && !(dowHideWknd && (dow === 1 || dow === 7))) {
+            state.dow.push({ index: i, text: DOW_NAMES[dow] || '', color: dowColor })
+          }
+        }
+      }
+    }
+
+    const customClose = (t, targetMinutes) => {
+      const hour = Math.floor(targetMinutes / 60)
+      const minute = targetMinutes % 60
+      return bv.timestamp(tz, bv.year(t, tz), bv.month(t, tz), bv.dayofmonth(t, tz) + 1, hour, minute, 0)
+    }
+
+    const estimateClose = (t, tf) => {
+      if (tf === '1D' || tf === '1W' || tf === '1M') {
+        const day = tf === '1D' ? 1 : tf === '1W' ? 7 : 0
+        const month = tf === '1M' ? 1 : 0
+        return bv.timestamp(tz, bv.year(t, tz), bv.month(t, tz) + month, bv.dayofmonth(t, tz) + day, bv.hour(t, tz), bv.minute(t, tz), 0)
+      }
+      return t + secOf(tf, chartSec) * 1000
+    }
+
+    const buildBuckets = (bucketMs) => {
+      const out = []
+      let current = null
+      let key = null
+      for (let i = 0; i < n; i += 1) {
+        const bar = dataList[i]
+        const next = Math.floor(bar.timestamp / bucketMs)
+        if (!current || next !== key) {
+          if (current) out.push(current)
+          current = { t: next * bucketMs, o: bar.open, h: bar.high, l: bar.low, c: bar.close, oIdx: i, hIdx: i, lIdx: i, cIdx: i, closeTime: (next + 1) * bucketMs }
+          key = next
+        } else {
+          if (bar.high > current.h) { current.h = bar.high; current.hIdx = i }
+          if (bar.low < current.l) { current.l = bar.low; current.lIdx = i }
+          current.c = bar.close
+          current.cIdx = i
+        }
+      }
+      if (current) out.push(current)
+      return out
+    }
+
+    const buildPeriod = (isNew, tf) => {
+      const out = []
+      let current = null
+      for (let i = 0; i < n; i += 1) {
+        const bar = dataList[i]
+        if (!current || isNew(i)) {
+          if (current) {
+            current.closeTime = bar.timestamp
+            out.push(current)
+          }
+          current = { t: bar.timestamp, o: bar.open, h: bar.high, l: bar.low, c: bar.close, oIdx: i, hIdx: i, lIdx: i, cIdx: i, closeTime: estimateClose(bar.timestamp, tf) }
+        } else {
+          if (bar.high > current.h) { current.h = bar.high; current.hIdx = i }
+          if (bar.low < current.l) { current.l = bar.low; current.lIdx = i }
+          current.c = bar.close
+          current.cIdx = i
+        }
+      }
+      if (current) out.push(current)
+      return out
+    }
+
+    const buildCustomDaily = (targetMinutes) => {
+      const out = []
+      let current = null
+      let prevMinute = -1
+      let prevDay = ''
+      for (let i = 0; i < n; i += 1) {
+        const t = dataList[i].timestamp
+        const bar = dataList[i]
+        const minute = bv.hour(t, tz) * 60 + bv.minute(t, tz)
+        const day = dayKey(t)
+        const crossed = current === null || (minute >= targetMinutes && (prevMinute < targetMinutes || prevDay !== day))
+        if (crossed) {
+          if (current) {
+            current.closeTime = t
+            out.push(current)
+          }
+          current = { t: t, o: bar.open, h: bar.high, l: bar.low, c: bar.close, oIdx: i, hIdx: i, lIdx: i, cIdx: i, closeTime: customClose(t, targetMinutes) }
+        } else {
+          if (bar.high > current.h) { current.h = bar.high; current.hIdx = i }
+          if (bar.low < current.l) { current.l = bar.low; current.lIdx = i }
+          current.c = bar.close
+          current.cIdx = i
+        }
+        prevMinute = minute
+        prevDay = day
+      }
+      if (current) out.push(current)
+      return out
+    }
+
+    const htfDefs = [
+      { show: showHtf1, tf: htfTf1, max: htfMax1 },
+      { show: showHtf2, tf: htfTf2, max: htfMax2 },
+      { show: showHtf3, tf: htfTf3, max: htfMax3 },
+      { show: showHtf4, tf: htfTf4, max: htfMax4 },
+      { show: showHtf5, tf: htfTf5, max: htfMax5 },
+      { show: showHtf6, tf: htfTf6, max: htfMax6 }
+    ]
+    const chosen = []
+    for (const def of htfDefs) {
+      if (chosen.length >= maxPanels) break
+      if (def.show && validTf(def.tf, chartSec)) chosen.push(def)
+    }
+
+    let offset = Math.max(1, htfOffset)
+    for (const def of chosen) {
+      const seconds = secOf(def.tf, chartSec)
+      let candles = null
+
+      if (useCustomDaily && def.tf === '1D' && customDaily !== 'Midnight') {
+        const target = customDaily === '8:30' ? 510 : 570
+        candles = buildCustomDaily(target)
+      } else if (def.tf === '1D') {
+        candles = buildPeriod(newDayAt, '1D')
+      } else if (def.tf === '1W') {
+        candles = buildPeriod(newWeekAt, '1W')
+      } else if (def.tf === '1M') {
+        candles = buildPeriod(newMonthAt, '1M')
+      } else {
+        candles = buildBuckets(seconds * 1000)
+      }
+
+      if (!candles) continue
+
+      const visibleCandles = candles.slice(-Math.max(1, def.max))
+      if (!visibleCandles.length) continue
+
+      const width = Math.max(2, htfCandleWidth * 2)
+      const panel = {
+        tf: def.tf,
+        seconds: seconds,
+        label: htfName(def.tf, seconds),
+        candles: visibleCandles,
+        start: lastIndex + offset,
+        width: width,
+        buffer: htfBuffer,
+        highs: 0,
+        lows: 0,
+        timer: '',
+        showTrace: false,
+        imbalances: []
+      }
+
+      panel.highs = visibleCandles[0].h
+      panel.lows = visibleCandles[0].l
+      for (const candle of visibleCandles) {
+        if (candle.h > panel.highs) panel.highs = candle.h
+        if (candle.l < panel.lows) panel.lows = candle.l
+      }
+
+      if (htfTimerShow) {
+        const lastCandle = visibleCandles[visibleCandles.length - 1]
+        panel.timer = fmtDuration(lastCandle.closeTime - Date.now())
+      }
+
+      if (fvgShow && visibleCandles.length > 3) {
+        for (let i = 0; i < visibleCandles.length - 2; i += 1) {
+          const first = visibleCandles[i]
+          const second = visibleCandles[i + 2]
+          if (first.l > second.h && Math.min(first.o, first.c) > Math.max(second.o, second.c)) {
+            panel.imbalances.push({ from: i, to: i + 2, top: first.l, bottom: second.h, color: fvgColor })
+          }
+          if (first.h < second.l && Math.max(first.o, first.c) < Math.min(second.o, second.c)) {
+            panel.imbalances.push({ from: i, to: i + 2, top: second.l, bottom: first.h, color: fvgColor })
+          }
+        }
+      }
+
+      if (viShow && visibleCandles.length > 2) {
+        for (let i = 0; i < visibleCandles.length - 1; i += 1) {
+          const first = visibleCandles[i]
+          const second = visibleCandles[i + 1]
+          if (first.l < second.h && Math.min(first.o, first.c) > Math.max(second.o, second.c)) {
+            panel.imbalances.push({ from: i, to: i + 1, top: Math.min(first.o, first.c), bottom: Math.max(second.o, second.c), color: viColor })
+          }
+          if (first.h > second.l && Math.max(first.o, first.c) < Math.min(second.o, second.c)) {
+            panel.imbalances.push({ from: i, to: i + 1, top: Math.min(second.o, second.c), bottom: Math.max(first.o, first.c), color: viColor })
+          }
+        }
+      }
+
+      state.panels.push(panel)
+      if (state.htfTopAll === null || panel.highs > state.htfTopAll) state.htfTopAll = panel.highs
+      if (state.htfBottomAll === null || panel.lows < state.htfBottomAll) state.htfBottomAll = panel.lows
+
+      offset += visibleCandles.length * width +
+        (visibleCandles.length > 0 ? (visibleCandles.length - 1) * htfBuffer : 0) +
+        htfGap
+    }
+
+    if (state.panels.length) {
+      if (traceAnchor === 'First Timeframe') state.panels[0].showTrace = true
+      else state.panels[state.panels.length - 1].showTrace = true
+    }
+
+    indicator._ict = state
+    return result
+  },
+
+  draw(args) {
+    const { ctx, indicator } = args
+    const state = indicator._ict
+    if (!state) return false
+
+    const cfg = state.cfg
+    const bounds = bv.bounds(args)
+    const visible = bv.visible(args)
+    const left = bounds.left
+    const top = bounds.top
+    const right = bounds.right
+    const bottom = bounds.bottom
+
+    ctx.save()
+    ctx.setLineDash([])
+
+    const boxAlpha = Math.max(0, Math.min(1, 1 - cfg.boxTransparency / 100))
+    const textAlpha = Math.max(0, Math.min(1, 1 - cfg.textTransparency / 100))
+
+    if (cfg.showKz) {
+      for (const zone of state.zones) {
+        if (zone.to < visible.from - 1 || zone.from > visible.to + 1) continue
+        bv.box(args, {
+          fromIndex: zone.from,
+          toIndex: zone.to,
+          top: zone.high,
+          bottom: zone.low,
+          color: zone.color,
+          fillOpacity: boxAlpha * 0.55,
+          borderOpacity: boxAlpha,
+          text: cfg.showKzText ? zone.name : '',
+          textOpacity: textAlpha,
+          under: true,
+          minTextWidth: 28,
+          padding: 3
+        })
+      }
+    }
+
+    if (cfg.showPivots) {
+      for (const zone of state.zones) {
+        if (zone.from > visible.to + 1) continue
+        if (zone.hiTo < visible.from - 1 && zone.loTo < visible.from - 1) continue
+        bv.line(args, {
+          fromIndex: zone.from,
+          toIndex: zone.hiTo,
+          price: zone.high,
+          color: zone.color,
+          width: cfg.kzpWidth,
+          opacity: 0.85,
+          dash: dashFor(cfg.kzpStyle)
+        })
+        bv.line(args, {
+          fromIndex: zone.from,
+          toIndex: zone.loTo,
+          price: zone.low,
+          color: zone.color,
+          width: cfg.kzpWidth,
+          opacity: 0.85,
+          dash: dashFor(cfg.kzpStyle)
+        })
+        if (cfg.showMidpoints) {
+          bv.line(args, {
+            fromIndex: zone.from,
+            toIndex: zone.midTo,
+            price: (zone.high + zone.low) / 2,
+            color: zone.color,
+            width: cfg.kzmWidth,
+            opacity: 0.65,
+            dash: dashFor(cfg.kzmStyle)
+          })
+        }
+        if (cfg.showPivotLabels) {
+          const hiX = cfg.labelRight ? zone.hiTo : zone.from
+          const loX = cfg.labelRight ? zone.loTo : zone.from
+          bv.label(args, {
+            index: hiX,
+            price: zone.high,
+            text: zone.hiLabel,
+            color: cfg.txtColor,
+            align: cfg.labelRight ? 'left' : 'center',
+            baseline: cfg.labelRight ? 'middle' : 'bottom',
+            size: cfg.labelSizePx
+          })
+          bv.label(args, {
+            index: loX,
+            price: zone.low,
+            text: zone.loLabel,
+            color: cfg.txtColor,
+            align: cfg.labelRight ? 'left' : 'center',
+            baseline: cfg.labelRight ? 'middle' : 'top',
+            size: cfg.labelSizePx
+          })
+        }
+      }
+    }
+
+    for (const line of state.dwmOpen) {
+      if (line.from > visible.to + 1) continue
+      bv.line(args, {
+        fromIndex: line.from,
+        toIndex: line.to,
+        price: line.price,
+        color: line.color,
+        width: line.width,
+        opacity: 0.8,
+        dash: dashFor(line.style)
+      })
+      bv.label(args, {
+        index: line.from,
+        price: line.price,
+        text: line.text,
+        color: cfg.txtColor,
+        align: 'left',
+        baseline: 'bottom',
+        size: cfg.labelSizePx
+      })
+    }
+
+    for (const line of state.dwmHl) {
+      if (line.from > visible.to + 1) continue
+      bv.line(args, {
+        fromIndex: line.from,
+        toIndex: line.to,
+        price: line.price,
+        color: line.color,
+        width: line.width,
+        opacity: 0.75,
+        dash: dashFor(line.style)
+      })
+      bv.label(args, {
+        index: line.from,
+        price: line.price,
+        text: line.text,
+        color: cfg.txtColor,
+        align: 'left',
+        baseline: line.text.indexOf('H') > 0 ? 'bottom' : 'top',
+        size: cfg.labelSizePx
+      })
+    }
+
+    for (const line of state.opens) {
+      if (line.from > visible.to + 1) continue
+      bv.line(args, {
+        fromIndex: line.from,
+        toIndex: line.to,
+        price: line.price,
+        color: line.color,
+        width: line.width,
+        opacity: 0.8,
+        dash: dashFor(line.style)
+      })
+      bv.label(args, {
+        index: line.from,
+        price: line.price,
+        text: line.text,
+        color: cfg.txtColor,
+        align: 'left',
+        baseline: 'bottom',
+        size: cfg.labelSizePx
+      })
+    }
+
+    for (const item of state.separators) {
+      const x = bv.xOfIndex(args, item.index)
+      if (!isFinite(x) || x < left - 2 || x > right + 2) continue
+      ctx.strokeStyle = item.color
+      ctx.lineWidth = item.width
+      ctx.setLineDash(dashFor(item.style) || [])
+      ctx.beginPath()
+      ctx.moveTo(x, top)
+      ctx.lineTo(x, bottom)
+      ctx.stroke()
+    }
+    ctx.setLineDash([])
+
+    for (const item of state.vlines) {
+      const x = bv.xOfIndex(args, item.index)
+      if (!isFinite(x) || x < left - 2 || x > right + 2) continue
+      ctx.strokeStyle = item.color
+      ctx.lineWidth = item.width
+      ctx.setLineDash(dashFor(item.style) || [])
+      ctx.beginPath()
+      ctx.moveTo(x, top)
+      ctx.lineTo(x, bottom)
+      ctx.stroke()
+    }
+    ctx.setLineDash([])
+
+    if (state.dow.length) {
+      const font = bv.font(args, { size: cfg.dowSizePx })
+      ctx.font = font.css
+      ctx.fillStyle = cfg.dowColor
+      ctx.textAlign = 'center'
+      ctx.textBaseline = cfg.dowYloc === 'Top' ? 'top' : 'bottom'
+      for (const item of state.dow) {
+        const x = bv.xOfIndex(args, item.index)
+        if (!isFinite(x) || x < left - 12 || x > right + 12) continue
+        ctx.fillText(item.text, x, cfg.dowYloc === 'Top' ? top + 3 : bottom - 3)
+      }
+    }
+
+    const dailyFont = cfg.dailyName ? bv.font(args, { size: 9 }).css : ''
+
+    for (const panel of state.panels) {
+      const unit = bv.xOfIndex(args, 1) - bv.xOfIndex(args, 0)
+      if (!isFinite(unit) || unit <= 0) continue
+      const span = (panel.candles.length - 1) * (panel.width + panel.buffer) + panel.width
+      const panelStartX = bv.xOfIndex(args, panel.start)
+      const panelEndX = bv.xOfIndex(args, panel.start + span)
+      if (!isFinite(panelStartX) || !isFinite(panelEndX)) continue
+      if (panelStartX > right + 800 || panelEndX < left - 40) continue
+
+      const bodyPx = Math.max(1, unit * panel.width)
+      const slotPx = unit * (panel.width + panel.buffer)
+
+      for (const imbalance of panel.imbalances) {
+        if (!cfg.fvgShow && imbalance.color === cfg.fvgColor) continue
+        if (!cfg.viShow && imbalance.color === cfg.viColor) continue
+        const from = panel.start + imbalance.from * (panel.width + panel.buffer)
+        const to = panel.start + imbalance.to * (panel.width + panel.buffer) + panel.width
+        bv.box(args, {
+          fromIndex: from,
+          toIndex: to,
+          top: imbalance.top,
+          bottom: imbalance.bottom,
+          color: imbalance.color,
+          fillOpacity: 1,
+          borderOpacity: 0,
+          under: false
+        })
+      }
+
+      for (let j = 0; j < panel.candles.length; j += 1) {
+        const candle = panel.candles[j]
+        const centerX = panelStartX + unit * (j * (panel.width + panel.buffer) + panel.width / 2)
+        const yOpen = bv.yOfPrice(args, candle.o)
+        const yClose = bv.yOfPrice(args, candle.c)
+        const yHigh = bv.yOfPrice(args, candle.h)
+        const yLow = bv.yOfPrice(args, candle.l)
+        if (![yOpen, yClose, yHigh, yLow].every((value) => isFinite(value))) continue
+        const bull = candle.c > candle.o
+        const wickColor = bull ? cfg.bullWick : cfg.bearWick
+        const bodyColor = bull ? cfg.bullBody : cfg.bearBody
+        const borderColor = bull ? cfg.bullBorder : cfg.bearBorder
+
+        ctx.strokeStyle = wickColor
+        ctx.lineWidth = 1
+        ctx.beginPath()
+        ctx.moveTo(centerX, yHigh)
+        ctx.lineTo(centerX, yLow)
+        ctx.stroke()
+
+        const bodyTop = Math.min(yOpen, yClose)
+        const bodyHeight = Math.max(1, Math.abs(yClose - yOpen))
+        ctx.fillStyle = bodyColor
+        ctx.fillRect(centerX - bodyPx / 2, bodyTop, bodyPx, bodyHeight)
+        ctx.strokeStyle = borderColor
+        ctx.strokeRect(centerX - bodyPx / 2 + 0.5, bodyTop + 0.5, Math.max(0, bodyPx - 1), Math.max(0, bodyHeight - 1))
+
+        if (cfg.dailyName) {
+          let value = ''
+          if (panel.tf === '1D') value = DOW_NAMES[bv.dayofweek(candle.t, cfg.tz)] || ''
+          else if (panel.seconds < 3600) value = String(bv.minute(candle.t, cfg.tz)).padStart(2, '0')
+          else if (panel.seconds < TF_1D) value = String(bv.hour(candle.t, cfg.tz)).padStart(2, '0')
+          else if (panel.tf === '1M') value = String(bv.month(candle.t, cfg.tz)).padStart(2, '0')
+          if (value) {
+            ctx.font = dailyFont
+            ctx.fillStyle = cfg.dowColor
+            ctx.textAlign = 'center'
+            ctx.textBaseline = 'bottom'
+            ctx.fillText(value, centerX, yHigh - 3)
+          }
+        }
+      }
+
+      if (cfg.traceShow && panel.showTrace) {
+        for (let j = 0; j < panel.candles.length; j += 1) {
+          const candle = panel.candles[j]
+          const target = panel.start + j * (panel.width + panel.buffer)
+          if (hasIndex(candle.oIdx)) {
+            bv.line(args, { fromIndex: candle.oIdx, toIndex: target, price: candle.o, color: cfg.traceOColor, width: cfg.traceOSize, opacity: 0.7, dash: dashFor(cfg.traceOStyle) })
+          }
+          if (hasIndex(candle.cIdx)) {
+            bv.line(args, { fromIndex: candle.cIdx, toIndex: target, price: candle.c, color: cfg.traceCColor, width: cfg.traceCSize, opacity: 0.7, dash: dashFor(cfg.traceCStyle) })
+          }
+          if (hasIndex(candle.hIdx)) {
+            bv.line(args, { fromIndex: candle.hIdx, toIndex: target, price: candle.h, color: cfg.traceHColor, width: cfg.traceHSize, opacity: 0.7, dash: dashFor(cfg.traceHStyle) })
+          }
+          if (hasIndex(candle.lIdx)) {
+            bv.line(args, { fromIndex: candle.lIdx, toIndex: target, price: candle.l, color: cfg.traceLColor, width: cfg.traceLSize, opacity: 0.7, dash: dashFor(cfg.traceLStyle) })
+          }
+        }
+        if (cfg.priceLabelShow) {
+          const lastCandle = panel.candles[panel.candles.length - 1]
+          const target = panel.start + span
+          bv.label(args, { index: target, price: lastCandle.c, text: priceText(lastCandle.c), color: cfg.priceLabelColor, align: 'left', baseline: 'middle', size: cfg.priceLabelSizePx })
+        }
+      }
+
+      if (cfg.htfLabelShow) {
+        const center = panel.start + Math.round((panel.candles.length - 1) * (panel.width + panel.buffer) / 2)
+        const panelTop = cfg.labelAlignment === 'Align' ? (state.htfTopAll || panel.highs) : panel.highs
+        const panelBottom = cfg.labelAlignment === 'Align' ? (state.htfBottomAll || panel.lows) : panel.lows
+        const timer = cfg.htfTimerShow && panel.timer ? ' (' + panel.timer + ')' : ''
+        const text = panel.label + timer
+        if (cfg.labelPosition === 'Both' || cfg.labelPosition === 'Top') {
+          bv.label(args, { index: center, price: panelTop, text: text, color: cfg.htfLabelColor, align: 'center', baseline: 'bottom', size: cfg.htfLabelSizePx })
+        }
+        if (cfg.labelPosition === 'Both' || cfg.labelPosition === 'Bottom') {
+          bv.label(args, { index: center, price: panelBottom, text: text, color: cfg.htfLabelColor, align: 'center', baseline: 'top', size: cfg.htfLabelSizePx })
+        }
+      }
+    }
+
+    if (cfg.showRange && state.table && state.table.length) {
+      const rows = state.table
+      const rowHeight = 20
+      const tableWidth = cfg.showRangeAvg ? 208 : 148
+      const tableHeight = rowHeight * (rows.length + 1) + 12
+      const pos = cfg.rangePos
+      let x = left + 10
+      let y = top + 10
+      if (pos.indexOf('Right') >= 0) x = right - tableWidth - 12
+      if (pos.indexOf('Center') >= 0) x = left + (right - left - tableWidth) / 2
+      if (pos.indexOf('Middle') >= 0) y = top + (bottom - top - tableHeight) / 2
+      if (pos.indexOf('Bottom') >= 0) y = bottom - tableHeight - 12
+
+      ctx.fillStyle = 'rgba(248,250,252,0.94)'
+      ctx.fillRect(x, y, tableWidth, tableHeight)
+      ctx.strokeStyle = 'rgba(0,0,0,0.22)'
+      ctx.lineWidth = 1
+      ctx.strokeRect(x + 0.5, y + 0.5, tableWidth - 1, tableHeight - 1)
+
+      ctx.font = bv.font(args, { size: cfg.rangeSizePx }).css
+      ctx.textAlign = 'left'
+      ctx.textBaseline = 'middle'
+      ctx.fillStyle = cfg.txtColor
+      ctx.fillText('Killzone', x + 8, y + 11)
+      ctx.fillText('Range', x + 88, y + 11)
+      let minCount = rows[0].count
+      for (const row of rows) if (row.count < minCount) minCount = row.count
+      if (cfg.showRangeAvg) ctx.fillText('Avg (' + minCount + ')', x + 148, y + 11)
+
+      for (let i = 0; i < rows.length; i += 1) {
+        const row = rows[i]
+        const rowY = y + 32 + i * rowHeight
+        if (row.active) {
+          ctx.fillStyle = bv.withAlpha(row.color, 0.18)
+          ctx.fillRect(x + 1, rowY - 9, tableWidth - 2, rowHeight)
+        }
+        ctx.fillStyle = cfg.txtColor
+        ctx.fillText(row.name, x + 8, rowY)
+        ctx.fillText(row.range === null ? '—' : priceText(row.range), x + 88, rowY)
+        if (cfg.showRangeAvg) ctx.fillText(row.average === null ? '—' : priceText(row.average), x + 148, rowY)
+      }
+    }
+
+    ctx.restore()
+    return false
+  }
+}
+
+function hasIndex(value) {
+  return typeof value === 'number' && value >= 0 && isFinite(value)
+}
+  </script>
+
+  <script src="./app.js" defer></script>
+</body>
+</html>
